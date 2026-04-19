@@ -51,7 +51,7 @@ const userSchema = new mongoose.Schema(
 );
 
 // Auto-combine fullName before save
-userSchema.pre("save", async function (next) {
+userSchema.pre("save", async function () {
   // Always sync fullName from first + last
   this.fullName = `${this.firstName} ${this.lastName}`;
 
@@ -60,8 +60,6 @@ userSchema.pre("save", async function (next) {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
   }
-
-  next();
 });
 
 // Compare plain-text password with stored hash

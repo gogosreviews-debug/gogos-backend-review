@@ -6,7 +6,6 @@ const connectDB = require("./config/db");
 dotenv.config();
 
 const app = express();
-const HOST = "0.0.0.0";
 
 const corsOptions = {
   origin: (origin, callback) => {
@@ -41,6 +40,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/api/auth",      require("./routes/authRoutes"));
 app.use("/api/reviews",   require("./routes/reviewRoutes"));
 app.use("/api/dashboard", require("./routes/dashboardRoutes"));
+app.use("/api/waiters",   require("./routes/waiterRoutes"));
 
 // Health check
 app.get("/", (req, res) => {
@@ -53,6 +53,6 @@ app.use((req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, HOST, () => {
-  console.log(`Server running on http://${HOST}:${PORT}`);
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
 });

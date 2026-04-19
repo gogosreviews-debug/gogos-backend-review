@@ -41,9 +41,6 @@ const signup = async (req, res) => {
       role: role ?? ROLES.CUSTOMER,
     });
 
-    const accessToken  = generateAccessToken(user);
-    const refreshToken = generateRefreshToken(user);
-
     return res.status(201).json({
       success: true,
       message: "Account created successfully.",
@@ -52,8 +49,6 @@ const signup = async (req, res) => {
         fullName:  user.fullName,
         email:     user.email,
         role:      user.role,
-        accessToken,
-        refreshToken,
       },
     });
   } catch (error) {

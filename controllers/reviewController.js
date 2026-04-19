@@ -1,8 +1,8 @@
 const Review = require("../models/Review");
 const mongoose = require("mongoose");
 
-const calculateAverageRating = (ratings = {}) => {
-  const ratingValues = Object.values(ratings).filter(
+const calculateAverageRating = (overallExperience, ratings = {}) => {
+  const ratingValues = [overallExperience, ...Object.values(ratings)].filter(
     (value) => typeof value === "number" && !Number.isNaN(value)
   );
 
@@ -15,14 +15,58 @@ const calculateAverageRating = (ratings = {}) => {
 };
 
 // @desc    Submit a new review
-// @route   POST /api/reviews
+// @route   POST /api/reviews  (protected — customer only)
 const submitReview = async (req, res) => {
   try {
-    const { fullName, email, comment, ratings } = req.body;
+    const {
+      name,
+      email,
+      phone,
+      overallExperience,
+      likedMost,
+      ratings,
+      whatWentWrong,
+      whatWentWrongDetails,
+      whatDidYouLove,
+      additionalComments,
+    } = req.body;
 
-    const review = await Review.create({ fullName, email, comment, ratings });
+    // Check if any rating is <= 3 to determine if whatWentWrong should be required
+    const hasLowRating = Object.values(ratings).some((rating) => rating <= 3);
+
+    if (hasLowRating && (!whatWentWrong || whatWentWrong.length === 0)) {
+      return res.status(422).json({
+        success: false,
+        message: "Since at least one rating is 3 or below, 'What went wrong?' is required.",
+      });
+    }
+
+    // If "Other" is selected in whatWentWrong, details are required
+    if (whatWentWrong && whatWentWrong.includes("Other") && !whatWentWrongDetails) {
+      return res.status(422).json({
+        success: false,
+        message: "Please provide details for 'Other' in 'What went wrong?'.",
+      });
+    }
+
+    const review = await Review.create({
+      name,
+      email,
+      phone,
+      overallExperience,
+      likedMost,
+      ratings,
+      whatWentWrong: hasLowRating ? whatWentWrong : undefined,
+      whatWentWrongDetails: whatWentWrongDetails || undefined,
+      whatDidYouLove: !hasLowRating ? whatDidYouLove : undefined,
+      additionalComments: additionalComments || undefined,
+    });
+
     const reviewObject = review.toObject();
-    const averageRating = calculateAverageRating(reviewObject.ratings);
+    const averageRating = calculateAverageRating(
+      reviewObject.overallExperience,
+      reviewObject.ratings
+    );
 
     return res.status(201).json({
       success: true,
@@ -50,7 +94,10 @@ const getReviews = async (req, res) => {
       const reviewObject = review.toObject();
       return {
         ...reviewObject,
-        averageRating: calculateAverageRating(reviewObject.ratings),
+        averageRating: calculateAverageRating(
+          reviewObject.overallExperience,
+          reviewObject.ratings
+        ),
       };
     });
 
@@ -103,7 +150,10 @@ const getReviewById = async (req, res) => {
     }
 
     const reviewObject = review.toObject();
-    const averageRating = calculateAverageRating(reviewObject.ratings);
+    const averageRating = calculateAverageRating(
+      reviewObject.overallExperience,
+      reviewObject.ratings
+    );
 
     return res.status(200).json({
       success: true,
