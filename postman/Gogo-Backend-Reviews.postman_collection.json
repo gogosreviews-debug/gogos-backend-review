@@ -99,14 +99,14 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Ali Rafay\",\n  \"email\": \"ali.rafay@example.com\",\n  \"phone\": \"+1-234-567-8900\",\n  \"overallExperience\": 4,\n  \"likedMost\": [\"Food quality\", \"Service\", \"Ambience\"],\n  \"ratings\": {\n    \"foodQuality\": 5,\n    \"service\": 4,\n    \"ambiance\": 4,\n    \"environment\": 3\n  },\n  \"whatWentWrong\": [\"Cleanliness\"],\n  \"whatWentWrongDetails\": \"Could be cleaner in the restroom.\",\n  \"additionalComments\": \"Overall great experience! Will visit again.\"\n}"
+              "raw": "{\n  \"name\": \"Ali Rafay\",\n  \"email\": \"ali.rafay@example.com\",\n  \"phone\": \"+1-234-567-8900\",\n  \"overallExperience\": 4,\n  \"likedMost\": [\"Food quality\", \"Service\", \"Ambience\"],\n  \"ratings\": {\n    \"foodQuality\": 5,\n    \"service\": 4,\n    \"ambiance\": 4,\n    \"environment\": 3\n  },\n  \"waiterDetails\": [\n    {\n      \"servedBy\": \"PUT_WAITER_ID_HERE\",\n      \"rateWaiter\": 5\n    }\n  ],\n  \"whatWentWrong\": [\"Cleanliness\"],\n  \"whatWentWrongDetails\": \"Could be cleaner in the restroom.\",\n  \"additionalComments\": \"Overall great experience! Will visit again.\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/reviews",
               "host": ["{{baseUrl}}"],
               "path": ["api", "reviews"]
             },
-            "description": "Submit a new review (Customer only - role 40). Flow: Basic Info → Overall Experience → What you liked → Detailed Ratings → (IF rating ≤ 3) What went wrong → (IF all ratings ≥ 4) What you loved → Additional Comments. 'Other' option in whatWentWrong opens chat box as whatWentWrongDetails."
+            "description": "Submit a new review (Customer only - role 40). Includes waiterDetails array with ServedBy waiter id and Rate Waiter (1-5). Waiter ratings are aggregated and updated in waiter records automatically."
           },
           "response": []
         },
@@ -118,11 +118,16 @@
               { "key": "Authorization", "value": "Bearer PUT_ACCESS_TOKEN_HERE" }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/reviews",
+              "raw": "{{baseUrl}}/api/reviews?page=1&per_page=10&fetchby=PUT_WAITER_ID_HERE",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "reviews"]
+              "path": ["api", "reviews"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "per_page", "value": "10" },
+                { "key": "fetchby", "value": "PUT_WAITER_ID_HERE" }
+              ]
             },
-            "description": "Fetch all reviews (Admin/Super Admin only - roles 10, 20). Requires a Bearer token."
+            "description": "Fetch paginated reviews (Admin/Super Admin only - roles 10, 20). Query params: page, per_page, and optional fetchby (waiter id) to fetch all review records by waiter. Requires a Bearer token."
           },
           "response": []
         },
@@ -214,11 +219,50 @@
               { "key": "Authorization", "value": "Bearer PUT_ACCESS_TOKEN_HERE" }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/waiters",
+              "raw": "{{baseUrl}}/api/waiters?page=1&per_page=10",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "waiters"]
+              "path": ["api", "waiters"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "per_page", "value": "10" }
+              ]
             },
-            "description": "Fetch all waiters (Admin/Super Admin only - roles 10, 20). Requires a Bearer token."
+            "description": "Fetch paginated waiters (Admin/Super Admin only - roles 10, 20). Query params: page, per_page. Requires a Bearer token."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Waiter Name-ID List",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer PUT_ACCESS_TOKEN_HERE" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/waiters/name-id-list",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "waiters", "name-id-list"]
+            },
+            "description": "Fetch all created waiters with name and id only. Accessible to authenticated users (roles 10, 20, 40)."
+          },
+          "response": []
+        },
+        {
+          "name": "Fetch Waiters By Name",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer PUT_ACCESS_TOKEN_HERE" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/waiters/search/by-name?name=ahmed",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "waiters", "search", "by-name"],
+              "query": [
+                { "key": "name", "value": "ahmed" }
+              ]
+            },
+            "description": "Fetch waiters by full name search (partial, case-insensitive), returning name and id only. Accessible to authenticated users (roles 10, 20, 40)."
           },
           "response": []
         },

@@ -23,6 +23,26 @@ const waiterSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    leftOn: {
+      type: Date,
+      default: null,
+    },
+    totalRatingScore: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    totalRatingCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    averageWaiterRating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

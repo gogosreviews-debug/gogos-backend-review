@@ -67,6 +67,23 @@ const reviewValidationRules = [
     .isInt({ min: 1, max: 5 })
     .withMessage("Environment rating must be between 1 and 5."),
 
+  // ─── Waiter Details (Required) ──────────────────────────────────────────
+  body("waiterDetails")
+    .isArray({ min: 1 })
+    .withMessage("At least one waiter detail is required."),
+
+  body("waiterDetails.*.servedBy")
+    .notEmpty()
+    .withMessage("ServedBy (waiter id) is required for each waiter detail.")
+    .isMongoId()
+    .withMessage("ServedBy must be a valid waiter id."),
+
+  body("waiterDetails.*.rateWaiter")
+    .notEmpty()
+    .withMessage("Rate Waiter is required for each waiter detail.")
+    .isInt({ min: 1, max: 5 })
+    .withMessage("Rate Waiter must be between 1 and 5."),
+
   // ─── Conditional: What went wrong? (Required if any rating <= 3) ─────────
   body("whatWentWrong")
     .optional({ checkFalsy: true })

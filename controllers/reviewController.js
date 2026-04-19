@@ -1,4 +1,5 @@
 const Review = require("../models/Review");
+const Waiter = require("../models/Waiter");
 const mongoose = require("mongoose");
 
 const calculateAverageRating = (overallExperience, ratings = {}) => {
@@ -25,6 +26,7 @@ const submitReview = async (req, res) => {
       overallExperience,
       likedMost,
       ratings,
+      waiterDetails,
       whatWentWrong,
       whatWentWrongDetails,
       whatDidYouLove,
@@ -56,11 +58,41 @@ const submitReview = async (req, res) => {
       overallExperience,
       likedMost,
       ratings,
+      waiterDetails,
       whatWentWrong: hasLowRating ? whatWentWrong : undefined,
       whatWentWrongDetails: whatWentWrongDetails || undefined,
       whatDidYouLove: !hasLowRating ? whatDidYouLove : undefined,
       additionalComments: additionalComments || undefined,
     });
+
+    const waiterRatingSummary = waiterDetails.reduce((accumulator, item) => {
+      const waiterId = String(item.servedBy);
+
+      if (!accumulator[waiterId]) {
+        accumulator[waiterId] = { score: 0, count: 0 };
+      }
+
+      accumulator[waiterId].score += item.rateWaiter;
+      accumulator[waiterId].count += 1;
+      return accumulator;
+    }, {});
+
+    const updateWaiterRatings = Object.entries(waiterRatingSummary).map(async ([waiterId, summary]) => {
+      const waiter = await Waiter.findById(waiterId);
+      if (!waiter) {
+        return;
+      }
+
+      waiter.totalRatingScore += summary.score;
+      waiter.totalRatingCount += summary.count;
+      waiter.averageWaiterRating = Number(
+        (waiter.totalRatingScore / waiter.totalRatingCount).toFixed(2)
+      );
+
+      await waiter.save();
+    });
+
+    await Promise.all(updateWaiterRatings);
 
     const reviewObject = review.toObject();
     const averageRating = calculateAverageRating(
@@ -89,7 +121,28 @@ const submitReview = async (req, res) => {
 // @route   GET /api/reviews
 const getReviews = async (req, res) => {
   try {
-    const reviews = await Review.find().sort({ createdAt: -1 });
+    const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+    const perPage = Math.min(Math.max(parseInt(req.query.per_page, 10) || 10, 1), 100);
+    const skip = (page - 1) * perPage;
+    const { fetchby } = req.query;
+
+    const filter = {};
+    if (fetchby) {
+      if (!mongoose.Types.ObjectId.isValid(fetchby)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid fetchby waiter id.",
+        });
+      }
+
+      filter["waiterDetails.servedBy"] = fetchby;
+    }
+
+    const totalRecords = await Review.countDocuments(filter);
+    const reviews = await Review.find(filter)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(perPage);
     const reviewsWithAverage = reviews.map((review) => {
       const reviewObject = review.toObject();
       return {
@@ -112,9 +165,17 @@ const getReviews = async (req, res) => {
         )
       : 0;
 
+    const totalPages = totalRecords ? Math.ceil(totalRecords / perPage) : 0;
+
     return res.status(200).json({
       success: true,
       count: reviewsWithAverage.length,
+      total: totalRecords,
+      page,
+      per_page: perPage,
+      total_pages: totalPages,
+      has_next_page: page < totalPages,
+      has_prev_page: page > 1,
       overallAverageRating,
       data: reviewsWithAverage,
     });

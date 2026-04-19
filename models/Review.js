@@ -73,6 +73,29 @@ const reviewSchema = new mongoose.Schema(
       },
     },
 
+    waiterDetails: {
+      type: [
+        {
+          servedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Waiter",
+            required: true,
+          },
+          rateWaiter: {
+            type: Number,
+            required: true,
+            min: 1,
+            max: 5,
+          },
+        },
+      ],
+      required: true,
+      validate: {
+        validator: (value) => Array.isArray(value) && value.length > 0,
+        message: "At least one waiter detail is required.",
+      },
+    },
+
     // What went wrong? (Conditional - required if any rating <= 3)
     // Options: "Slow Service", "Food issue", "Staff", "Cleanliness", "Other"
     whatWentWrong: {
