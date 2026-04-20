@@ -1,10 +1,14 @@
 {
   "info": {
-    "name": "Gogo Backend API",
-    "description": "Postman collection for the auth, review, dashboard, waiter, and alert modules.",
+    "name": "Gogo Backend API — Full",
+    "description": "Complete Postman collection for Auth, Waiter, Review, Dashboard, and Alert modules.\n\n**Setup:**\n1. Set collection variable `baseUrl` → `http://localhost:5000`\n2. Login → copy `accessToken` from response → paste into `accessToken` collection variable\n\n**Roles:** 10=Super Admin | 20=Admin | 40=Customer",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_postman_id": "d3a89cda-7de4-4e9a-b8a0-a7350f72a1c1"
   },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000", "type": "string" },
+    { "key": "accessToken", "value": "PUT_ACCESS_TOKEN_HERE", "type": "string" }
+  ],
   "item": [
     {
       "name": "Auth",
@@ -23,7 +27,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "auth", "signup"]
             },
-            "description": "Register a new user. Role is optional and defaults to 40 (Customer). Roles: 10=Super Admin, 20=Admin, 40=Customer. Signup does not return tokens; use Login to get access and refresh tokens."
+            "description": "Register a new user. Role: 10=Super Admin, 20=Admin, 40=Customer (default). No token required. Signup does not return tokens — use Login."
           },
           "response": []
         },
@@ -41,7 +45,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "auth", "login"]
             },
-            "description": "Login with email and password. Returns accessToken (7d) and refreshToken (30d)."
+            "description": "Login and get accessToken (7d) + refreshToken (30d). Copy accessToken value into the `accessToken` collection variable."
           },
           "response": []
         },
@@ -69,7 +73,7 @@
             "method": "POST",
             "header": [
               { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer PUT_ACCESS_TOKEN_HERE" }
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
             ],
             "body": {
               "mode": "raw",
@@ -80,115 +84,14 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "auth", "change-password"]
             },
-            "description": "Change password for the authenticated user. Requires a valid Bearer token."
+            "description": "Change password. Requires valid Bearer token (any authenticated role)."
           },
           "response": []
         }
       ]
     },
     {
-      "name": "Review",
-      "item": [
-        {
-          "name": "Create Review",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer PUT_ACCESS_TOKEN_HERE" }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Ali Rafay\",\n  \"email\": \"ali.rafay@example.com\",\n  \"phone\": \"+1-234-567-8900\",\n  \"overallExperience\": 4,\n  \"likedMost\": [\"Food quality\", \"Service\", \"Ambience\"],\n  \"ratings\": {\n    \"foodQuality\": 5,\n    \"service\": 4,\n    \"ambiance\": 4,\n    \"environment\": 3\n  },\n  \"waiterDetails\": [\n    {\n      \"servedBy\": \"PUT_WAITER_ID_HERE\",\n      \"rateWaiter\": 5\n    }\n  ],\n  \"whatWentWrong\": [\"Cleanliness\"],\n  \"whatWentWrongDetails\": \"Could be cleaner in the restroom.\",\n  \"additionalComments\": \"Overall great experience! Will visit again.\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/reviews",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "reviews"]
-            },
-            "description": "Submit a new review (Customer only - role 40). Includes waiterDetails array with ServedBy waiter id and Rate Waiter (1-5). Waiter ratings are aggregated and updated in waiter records automatically. If averageRating goes below 2, a realtime critical alert is created for Admin accounts only (role 20)."
-          },
-          "response": []
-        },
-        {
-          "name": "Get All Reviews",
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "Authorization", "value": "Bearer PUT_ACCESS_TOKEN_HERE" }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/reviews?page=1&per_page=10&fetchby=PUT_WAITER_ID_HERE",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "reviews"],
-              "query": [
-                { "key": "page", "value": "1" },
-                { "key": "per_page", "value": "10" },
-                { "key": "fetchby", "value": "PUT_WAITER_ID_HERE" }
-              ]
-            },
-            "description": "Fetch paginated reviews (Admin/Super Admin only - roles 10, 20). Query params: page, per_page, and optional fetchby (waiter id) to fetch all review records by waiter. Requires a Bearer token."
-          },
-          "response": []
-        },
-        {
-          "name": "Get Review By ID",
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "Authorization", "value": "Bearer PUT_ACCESS_TOKEN_HERE" }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/reviews/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "reviews", ":id"],
-              "variable": [
-                { "key": "id", "value": "PUT_REVIEW_ID_HERE" }
-              ]
-            },
-            "description": "Fetch a single review by ID (Admin/Super Admin only - roles 10, 20). Requires a Bearer token."
-          },
-          "response": []
-        },
-        {
-          "name": "Delete Review",
-          "request": {
-            "method": "DELETE",
-            "header": [
-              { "key": "Authorization", "value": "Bearer PUT_ACCESS_TOKEN_HERE" }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/reviews/:id",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "reviews", ":id"],
-              "variable": [
-                { "key": "id", "value": "PUT_REVIEW_ID_HERE" }
-              ]
-            },
-            "description": "Delete a review by ID (Super Admin only - role 10). Requires a Bearer token."
-          },
-          "response": []
-        },
-        {
-          "name": "Get Dashboard Stats",
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "Authorization", "value": "Bearer PUT_ACCESS_TOKEN_HERE" }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/api/dashboard",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "dashboard"]
-            },
-            "description": "Returns total reviews and overall plus per-field average ratings (Admin/Super Admin only - roles 10, 20). Requires a Bearer token."
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Waiter",
+      "name": "Waiters",
       "item": [
         {
           "name": "Create Waiter",
@@ -196,18 +99,18 @@
             "method": "POST",
             "header": [
               { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer PUT_ACCESS_TOKEN_HERE" }
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"fullName\": \"Ahmed Raza\",\n  \"phone\": \"03123456789\",\n  \"isActive\": true,\n  \"leftOn\": null\n}"
+              "raw": "{\n  \"fullName\": \"Ahmed Raza\",\n  \"phone\": \"03001234567\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/api/waiters",
               "host": ["{{baseUrl}}"],
               "path": ["api", "waiters"]
             },
-            "description": "Create a new waiter (Admin/Super Admin only - roles 10, 20). Fields: fullName, phone (exactly 11 digits), isActive, leftOn. joinedOn and createdBy are set automatically by the backend."
+            "description": "Create a new waiter. Requires Super Admin (10) or Admin (20) token.\n\n`createdBy` is set automatically by the backend.\n\n**Fields:**\n- `fullName` (required, 2–100 chars)\n- `phone` (required, exactly 11 digits)"
           },
           "response": []
         },
@@ -216,18 +119,18 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer PUT_ACCESS_TOKEN_HERE" }
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
             ],
             "url": {
               "raw": "{{baseUrl}}/api/waiters?page=1&per_page=10",
               "host": ["{{baseUrl}}"],
               "path": ["api", "waiters"],
               "query": [
-                { "key": "page", "value": "1" },
-                { "key": "per_page", "value": "10" }
+                { "key": "page", "value": "1", "description": "Page number (default: 1)" },
+                { "key": "per_page", "value": "10", "description": "Results per page (default: 10, max: 100)" }
               ]
             },
-            "description": "Fetch paginated waiters (Admin/Super Admin only - roles 10, 20). Query params: page, per_page. Requires a Bearer token."
+            "description": "Get paginated list of all non-deleted waiters. Requires Super Admin (10) or Admin (20) token."
           },
           "response": []
         },
@@ -236,33 +139,33 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer PUT_ACCESS_TOKEN_HERE" }
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
             ],
             "url": {
               "raw": "{{baseUrl}}/api/waiters/name-id-list",
               "host": ["{{baseUrl}}"],
               "path": ["api", "waiters", "name-id-list"]
             },
-            "description": "Fetch all created waiters with name and id only. Accessible to authenticated users (roles 10, 20, 40)."
+            "description": "Returns only `_id` and `fullName` for all non-deleted waiters. Available to all roles (10, 20, 40). Use this to populate waiter dropdowns on the review form."
           },
           "response": []
         },
         {
-          "name": "Fetch Waiters By Name",
+          "name": "Search Waiters by Name",
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer PUT_ACCESS_TOKEN_HERE" }
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/waiters/search/by-name?name=ahmed",
+              "raw": "{{baseUrl}}/api/waiters/search/by-name?name=Ahmed",
               "host": ["{{baseUrl}}"],
               "path": ["api", "waiters", "search", "by-name"],
               "query": [
-                { "key": "name", "value": "ahmed" }
+                { "key": "name", "value": "Ahmed", "description": "Name to search (case-insensitive, partial match)" }
               ]
             },
-            "description": "Fetch waiters by full name search (partial, case-insensitive), returning name and id only. Accessible to authenticated users (roles 10, 20, 40)."
+            "description": "Search non-deleted waiters by partial name match. Returns `_id` and `fullName` only. Available to all roles (10, 20, 40)."
           },
           "response": []
         },
@@ -271,60 +174,174 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer PUT_ACCESS_TOKEN_HERE" }
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/waiters/:id",
+              "raw": "{{baseUrl}}/api/waiters/PUT_WAITER_ID_HERE",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "waiters", ":id"],
-              "variable": [
-                { "key": "id", "value": "PUT_WAITER_ID_HERE" }
-              ]
+              "path": ["api", "waiters", "PUT_WAITER_ID_HERE"]
             },
-            "description": "Fetch a single waiter by ID (Admin/Super Admin only - roles 10, 20). Requires a Bearer token."
+            "description": "Get a single non-deleted waiter by ID. Requires Super Admin (10) or Admin (20) token."
           },
           "response": []
         },
         {
-          "name": "Update Waiter Full Name",
+          "name": "Edit Waiter",
           "request": {
             "method": "PUT",
             "header": [
               { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer PUT_ACCESS_TOKEN_HERE" }
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"fullName\": \"Ahmed Raza Khan\"\n}"
+              "raw": "{\n  \"fullName\": \"Ahmed Raza Updated\",\n  \"phone\": \"03009876543\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/waiters/:id",
+              "raw": "{{baseUrl}}/api/waiters/PUT_WAITER_ID_HERE",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "waiters", ":id"],
-              "variable": [
-                { "key": "id", "value": "PUT_WAITER_ID_HERE" }
-              ]
+              "path": ["api", "waiters", "PUT_WAITER_ID_HERE"]
             },
-            "description": "Update waiter full name only (Admin/Super Admin only - roles 10, 20). Requires a Bearer token."
+            "description": "Update waiter details. All fields are optional — only sent fields will be updated. Requires Super Admin (10) or Admin (20) token.\n\n**Editable fields:**\n- `fullName` (2–100 chars)\n- `phone` (exactly 11 digits)"
           },
           "response": []
         },
         {
-          "name": "Delete Waiter By ID",
+          "name": "Delete Waiter (Soft)",
           "request": {
             "method": "DELETE",
             "header": [
-              { "key": "Authorization", "value": "Bearer PUT_ACCESS_TOKEN_HERE" }
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
             ],
             "url": {
-              "raw": "{{baseUrl}}/api/waiters/:id",
+              "raw": "{{baseUrl}}/api/waiters/PUT_WAITER_ID_HERE",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "waiters", ":id"],
-              "variable": [
-                { "key": "id", "value": "PUT_WAITER_ID_HERE" }
+              "path": ["api", "waiters", "PUT_WAITER_ID_HERE"]
+            },
+            "description": "Soft-deletes a waiter (sets `isDeleted: true`). Waiter is NOT removed from the database. All listing/search APIs will exclude this waiter. Requires Super Admin (10) or Admin (20) token."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Reviews",
+      "item": [
+        {
+          "name": "Submit Review",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"phone\": \"03001234567\",\n  \"overallExperience\": 4,\n  \"likedMost\": [\"Food quality\", \"Service\"],\n  \"ratings\": {\n    \"foodQuality\": 4,\n    \"service\": 5,\n    \"ambiance\": 3,\n    \"environment\": 4\n  },\n  \"waiterDetails\": [\n    {\n      \"servedBy\": \"PUT_WAITER_ID_HERE\",\n      \"rateWaiter\": 4\n    }\n  ],\n  \"whatWentWrong\": [\"Cleanliness\"],\n  \"whatWentWrongDetails\": null,\n  \"whatDidYouLove\": null,\n  \"additionalComments\": \"Will visit again.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/reviews",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reviews"]
+            },
+            "description": "Submit a new review. Requires Customer (role 40) token.\n\n**Rules:**\n- If any `ratings` value ≤ 3 → `whatWentWrong` array is required\n- If `whatWentWrong` includes `\"Other\"` → `whatWentWrongDetails` string is required\n- `waiterDetails` requires at least 1 entry: `servedBy` (waiter ObjectId) + `rateWaiter` (1–5)\n- `likedMost` valid options: `Food quality`, `Taste`, `Service`, `Ambience`, `Cleanliness`\n- `whatWentWrong` same options\n- If `averageRating < 2` → critical alert created and emitted via Socket.IO to all admin (role 20) clients"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Reviews",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reviews?page=1&per_page=10&sort=-1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reviews"],
+              "query": [
+                { "key": "page", "value": "1", "description": "Page number (default: 1)" },
+                { "key": "per_page", "value": "10", "description": "Results per page (default: 10, max: 100)" },
+                { "key": "sort", "value": "-1", "description": "Date sort: -1=newest first (default), 1=oldest first" },
+                { "key": "fetchby", "value": "", "description": "Filter by waiter ID (waiterDetails.servedBy). Leave empty to fetch all.", "disabled": true }
               ]
             },
-            "description": "Delete waiter by ID (Admin/Super Admin only - roles 10, 20). Requires a Bearer token."
+            "description": "Get paginated reviews with optional waiter filter and date sorting. Requires Super Admin (10) or Admin (20) token."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Reviews by Waiter",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reviews?fetchby=PUT_WAITER_ID_HERE&page=1&per_page=10&sort=-1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reviews"],
+              "query": [
+                { "key": "fetchby", "value": "PUT_WAITER_ID_HERE", "description": "Waiter ObjectId to filter reviews" },
+                { "key": "page", "value": "1" },
+                { "key": "per_page", "value": "10" },
+                { "key": "sort", "value": "-1" }
+              ]
+            },
+            "description": "Get all reviews that include a specific waiter in `waiterDetails.servedBy`. Requires Super Admin (10) or Admin (20) token."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Review By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reviews/PUT_REVIEW_ID_HERE",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reviews", "PUT_REVIEW_ID_HERE"]
+            },
+            "description": "Get a single review by ID. Requires Super Admin (10) or Admin (20) token."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Review",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/reviews/PUT_REVIEW_ID_HERE",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reviews", "PUT_REVIEW_ID_HERE"]
+            },
+            "description": "Permanently delete a review. Super Admin (role 10) only."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Get Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/dashboard",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "dashboard"]
+            },
+            "description": "Fetch dashboard statistics. Requires Super Admin (10) or Admin (20) token.\n\nBlocked with `423 Locked` if a pending critical alert exists — resolve the alert first."
           },
           "response": []
         }
@@ -338,45 +355,42 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer PUT_ACCESS_TOKEN_HERE" }
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
             ],
             "url": {
               "raw": "{{baseUrl}}/api/alerts/pending",
               "host": ["{{baseUrl}}"],
               "path": ["api", "alerts", "pending"]
             },
-            "description": "Fetch unresolved critical review alerts. Admin only (role 20). Use this on page load/reconnect so the frontend can reopen the blocking alert screen if an alert is still pending."
+            "description": "Returns all critical alerts with `status: pending`. Admin (role 20) only.\n\nUse on page load / socket reconnect to restore unresolved blocking alert state on admin frontend."
           },
           "response": []
         },
         {
-          "name": "Respond To Critical Alert",
+          "name": "Respond To Alert (Got It)",
           "request": {
             "method": "POST",
             "header": [
               { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer PUT_ACCESS_TOKEN_HERE" }
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"responseMessage\": \"We are sorry for your experience. Our admin has reviewed your feedback and will contact you shortly.\"\n}"
+              "raw": "{\n  \"responseMessage\": \"Got it\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/alerts/:id/respond",
+              "raw": "{{baseUrl}}/api/alerts/PUT_ALERT_ID_HERE/respond",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "alerts", ":id", "respond"],
-              "variable": [
-                { "key": "id", "value": "PUT_ALERT_ID_HERE" }
-              ]
+              "path": ["api", "alerts", "PUT_ALERT_ID_HERE", "respond"]
             },
-            "description": "Respond to a pending critical alert and unlock admin functionality. Admin only (role 20). A realtime resolved event is emitted after success."
+            "description": "Acknowledge a pending critical alert. Marks it `responded`, unblocks all admin routes, and emits `critical-review-alert-resolved` via Socket.IO to all connected admins.\n\n`responseMessage` is optional — defaults to `\"Got it\"` if not sent.\n\n**Response:**\n```json\n{\n  \"success\": true,\n  \"responded\": true,\n  \"data\": {\n    \"alertId\": \"...\",\n    \"reviewId\": \"...\",\n    \"status\": \"responded\",\n    \"responseMessage\": \"Got it\",\n    \"respondedAt\": \"...\"\n  }\n}\n```\nAdmin (role 20) only."
           },
           "response": []
         }
       ]
     },
     {
-      "name": "Health Check",
+      "name": "Health",
       "request": {
         "method": "GET",
         "header": [],
@@ -390,10 +404,8 @@
       "response": []
     }
   ],
-  "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:5000"
-    }
-  ]
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+  }
 }

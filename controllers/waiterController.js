@@ -5,7 +5,7 @@ const getValidatedWaiterId = (id) => mongoose.Types.ObjectId.isValid(id);
 
 const getWaiterNameIdList = async (req, res) => {
   try {
-    const waiters = await Waiter.find()
+    const waiters = await Waiter.find({ isDeleted: false })
       .select("_id fullName")
       .sort({ createdAt: -1 });
 
@@ -36,6 +36,7 @@ const getWaitersByName = async (req, res) => {
 
     const waiters = await Waiter.find({
       fullName: { $regex: name, $options: "i" },
+      isDeleted: false,
     })
       .select("_id fullName")
       .sort({ fullName: 1 });
@@ -56,13 +57,11 @@ const getWaitersByName = async (req, res) => {
 
 const createWaiter = async (req, res) => {
   try {
-    const { fullName, phone, isActive, leftOn } = req.body;
+    const { fullName, phone } = req.body;
 
     const waiter = await Waiter.create({
       fullName,
       phone,
-      isActive: typeof isActive === "boolean" ? isActive : true,
-      leftOn: leftOn || null,
       createdBy: req.user.id,
     });
 
@@ -85,9 +84,10 @@ const getWaiters = async (req, res) => {
     const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
     const perPage = Math.min(Math.max(parseInt(req.query.per_page, 10) || 10, 1), 100);
     const skip = (page - 1) * perPage;
+    const waiterFilter = { isDeleted: false };
 
-    const totalRecords = await Waiter.countDocuments();
-    const waiters = await Waiter.find()
+    const totalRecords = await Waiter.countDocuments(waiterFilter);
+    const waiters = await Waiter.find(waiterFilter)
       .populate("createdBy", "_id fullName email role")
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -126,7 +126,7 @@ const getWaiterById = async (req, res) => {
       });
     }
 
-    const waiter = await Waiter.findById(id).populate("createdBy", "_id fullName email role");
+    const waiter = await Waiter.findOne({ _id: id, isDeleted: false }).populate("createdBy", "_id fullName email role");
 
     if (!waiter) {
       return res.status(404).json({
@@ -148,10 +148,10 @@ const getWaiterById = async (req, res) => {
   }
 };
 
-const updateWaiterFullName = async (req, res) => {
+const editWaiter = async (req, res) => {
   try {
     const { id } = req.params;
-    const { fullName } = req.body;
+    const { fullName, phone } = req.body;
 
     if (!getValidatedWaiterId(id)) {
       return res.status(400).json({
@@ -160,7 +160,7 @@ const updateWaiterFullName = async (req, res) => {
       });
     }
 
-    const waiter = await Waiter.findById(id);
+    const waiter = await Waiter.findOne({ _id: id, isDeleted: false });
 
     if (!waiter) {
       return res.status(404).json({
@@ -169,12 +169,14 @@ const updateWaiterFullName = async (req, res) => {
       });
     }
 
-    waiter.fullName = fullName;
+    if (fullName !== undefined) waiter.fullName = fullName;
+    if (phone !== undefined) waiter.phone = phone;
+
     await waiter.save();
 
     return res.status(200).json({
       success: true,
-      message: "Waiter full name updated successfully.",
+      message: "Waiter updated successfully.",
       data: waiter,
     });
   } catch (error) {
@@ -197,7 +199,7 @@ const deleteWaiterById = async (req, res) => {
       });
     }
 
-    const waiter = await Waiter.findById(id);
+    const waiter = await Waiter.findOne({ _id: id, isDeleted: false });
 
     if (!waiter) {
       return res.status(404).json({
@@ -206,7 +208,8 @@ const deleteWaiterById = async (req, res) => {
       });
     }
 
-    await waiter.deleteOne();
+    waiter.isDeleted = true;
+    await waiter.save();
 
     return res.status(200).json({
       success: true,
@@ -227,6 +230,6 @@ module.exports = {
   getWaiterNameIdList,
   getWaitersByName,
   getWaiterById,
-  updateWaiterFullName,
+  editWaiter,
   deleteWaiterById,
 };

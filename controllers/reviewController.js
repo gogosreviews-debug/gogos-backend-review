@@ -154,6 +154,7 @@ const getReviews = async (req, res) => {
     const perPage = Math.min(Math.max(parseInt(req.query.per_page, 10) || 10, 1), 100);
     const skip = (page - 1) * perPage;
     const { fetchby } = req.query;
+    const sortOrder = req.query.sort === "1" ? 1 : -1;
 
     const filter = {};
     if (fetchby) {
@@ -169,7 +170,7 @@ const getReviews = async (req, res) => {
 
     const totalRecords = await Review.countDocuments(filter);
     const reviews = await Review.find(filter)
-      .sort({ createdAt: -1 })
+      .sort({ createdAt: sortOrder })
       .skip(skip)
       .limit(perPage);
     const reviewsWithAverage = reviews.map((review) => {

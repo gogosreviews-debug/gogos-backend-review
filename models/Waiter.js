@@ -15,18 +15,6 @@ const waiterSchema = new mongoose.Schema(
       trim: true,
       match: [/^\d{11}$/, "Phone number must be exactly 11 digits."],
     },
-    joinedOn: {
-      type: Date,
-      default: Date.now,
-    },
-    isActive: {
-      type: Boolean,
-      default: true,
-    },
-    leftOn: {
-      type: Date,
-      default: null,
-    },
     totalRatingScore: {
       type: Number,
       default: 0,
@@ -47,6 +35,10 @@ const waiterSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }
