@@ -14,25 +14,24 @@ const createWaiterValidationRules = [
     .withMessage("Phone number is required.")
     .matches(/^\d{11}$/)
     .withMessage("Phone number must be exactly 11 digits."),
-
-  body("isActive")
-    .optional()
-    .isBoolean()
-    .withMessage("isActive must be true or false."),
-
-  body("leftOn")
-    .optional({ nullable: true, checkFalsy: false })
-    .custom((value) => value === null || value === "" || !Number.isNaN(Date.parse(value)))
-    .withMessage("Left on must be a valid date or null."),
 ];
 
-const updateWaiterValidationRules = [
+const editWaiterValidationRules = [
   body("fullName")
+    .optional()
     .trim()
     .notEmpty()
-    .withMessage("Waiter full name is required.")
+    .withMessage("Waiter full name cannot be empty.")
     .isLength({ min: 2, max: 100 })
     .withMessage("Waiter full name must be between 2 and 100 characters."),
+
+  body("phone")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("Phone number cannot be empty.")
+    .matches(/^\d{11}$/)
+    .withMessage("Phone number must be exactly 11 digits."),
 ];
 
 const validate = (req, res, next) => {
@@ -52,6 +51,6 @@ const validate = (req, res, next) => {
 
 module.exports = {
   createWaiterValidationRules,
-  updateWaiterValidationRules,
+  editWaiterValidationRules,
   validate,
 };
