@@ -7,12 +7,12 @@ const {
   getWaiterNameIdList,
   getWaitersByName,
   getWaiterById,
-  updateWaiterFullName,
+  editWaiter,
   deleteWaiterById,
 } = require("../controllers/waiterController");
 const {
   createWaiterValidationRules,
-  updateWaiterValidationRules,
+  editWaiterValidationRules,
   validate,
 } = require("../middlewares/waiterValidator");
 const { protect, restrictTo } = require("../middlewares/authMiddleware");
@@ -23,7 +23,8 @@ router.get("/", protect, blockAdminWhenCriticalAlertPending, restrictTo(10, 20),
 router.get("/name-id-list", protect, blockAdminWhenCriticalAlertPending, restrictTo(10, 20, 40), getWaiterNameIdList);
 router.get("/search/by-name", protect, blockAdminWhenCriticalAlertPending, restrictTo(10, 20, 40), getWaitersByName);
 router.get("/:id", protect, blockAdminWhenCriticalAlertPending, restrictTo(10, 20), getWaiterById);
-router.put("/:id", protect, blockAdminWhenCriticalAlertPending, restrictTo(10, 20), updateWaiterValidationRules, validate, updateWaiterFullName);
+router.put("/edit/:id", protect, blockAdminWhenCriticalAlertPending, restrictTo(10, 20), editWaiterValidationRules, validate, editWaiter);
+router.put("/:id", protect, blockAdminWhenCriticalAlertPending, restrictTo(10, 20), editWaiterValidationRules, validate, editWaiter);
 router.delete("/:id", protect, blockAdminWhenCriticalAlertPending, restrictTo(10, 20), deleteWaiterById);
 
 module.exports = router;
