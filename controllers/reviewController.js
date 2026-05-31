@@ -57,7 +57,7 @@ const submitReview = async (req, res) => {
       name,
       email,
       phone,
-      submittedBy: req.user.id,
+      submittedBy: undefined, // No user id since no auth
       overallExperience,
       likedMost,
       ratings,
@@ -108,7 +108,7 @@ const submitReview = async (req, res) => {
     if (averageRating < 2) {
       criticalAlert = await CriticalAlert.create({
         reviewId: review._id,
-        customerUserId: req.user.id,
+        customerUserId: undefined, // No user id since no auth
         customerName: name,
         customerEmail: email,
         customerPhone: phone,
@@ -120,7 +120,7 @@ const submitReview = async (req, res) => {
         reviewId: review._id,
         averageRating,
         status: criticalAlert.status,
-        customerUserId: req.user.id,
+        customerUserId: undefined, // No user id since no auth
         customerName: name,
         customerEmail: email,
         customerPhone: phone,
