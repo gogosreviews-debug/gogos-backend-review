@@ -16,20 +16,23 @@ dotenv.config();
 const app = express();
 const httpServer = http.createServer(app);
 
+const allowedOrigins = [
+  'https://gogos-reviews.netlify.app',
+  'https://gogos-backend-review.onrender.com',
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://127.0.0.1:3000',
+  'http://127.0.0.1:5173',
+];
+
 const corsOptions = {
-  origin: (origin, callback) => {
-    if (!origin) {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
-
-    const isLocalhost = /^(https?:\/\/)?(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
-    const isSameWifi = /^https?:\/\/192\.168\.2\.\d{1,3}(:\d+)?$/i.test(origin);
-
-    if (isLocalhost || isSameWifi) {
-      return callback(null, true);
-    }
-
-    return callback(new Error("Not allowed by CORS"));
+    return callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
