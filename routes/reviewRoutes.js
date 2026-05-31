@@ -6,8 +6,8 @@ const { reviewValidationRules, validate } = require("../middlewares/reviewValida
 const { protect, restrictTo } = require("../middlewares/authMiddleware");
 const { blockAdminWhenCriticalAlertPending } = require("../middlewares/adminAlertMiddleware");
 
-// POST /api/reviews  — Customer only (role 40)
-router.post("/", protect, restrictTo(40), reviewValidationRules, validate, submitReview);
+// POST /api/reviews  — No authentication or role restriction
+router.post("/", reviewValidationRules, validate, submitReview);
 
 // GET  /api/reviews  — Super Admin + Admin only (roles 10, 20)
 router.get("/", protect, blockAdminWhenCriticalAlertPending, restrictTo(10, 20), getReviews);
