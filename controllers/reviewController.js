@@ -33,6 +33,7 @@ const submitReview = async (req, res) => {
       whatWentWrongDetails,
       whatDidYouLove,
       additionalComments,
+      nextBranchLoc,
     } = req.body;
 
     // Check if any rating is <= 3 to determine if whatWentWrong should be required
@@ -66,6 +67,7 @@ const submitReview = async (req, res) => {
       whatWentWrongDetails: whatWentWrongDetails || undefined,
       whatDidYouLove: !hasLowRating ? whatDidYouLove : undefined,
       additionalComments: additionalComments || undefined,
+      nextBranchLoc: nextBranchLoc || undefined,
     });
 
     const waiterRatingSummary = waiterDetails.reduce((accumulator, item) => {
