@@ -128,6 +128,13 @@ const reviewSchema = new mongoose.Schema(
       trim: true,
       maxlength: 500,
     },
+
+    // Next Branch Location (Optional)
+    nextBranchLoc: {
+      type: String,
+      trim: true,
+      maxlength: 200,
+    },
   },
   { timestamps: true }
 );
