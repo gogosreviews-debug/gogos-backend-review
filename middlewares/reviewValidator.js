@@ -121,6 +121,12 @@ const reviewValidationRules = [
     .trim()
     .isLength({ max: 500 })
     .withMessage("Additional comments must not exceed 500 characters."),
+
+  body("nextBranchLoc")
+    .optional({ checkFalsy: true })
+    .trim()
+    .isLength({ max: 200 })
+    .withMessage("Next branch location must not exceed 200 characters."),
 ];
 
 const validate = (req, res, next) => {
